@@ -18,6 +18,7 @@ RUN go get github.com/confluentinc/confluent-kafka-go/kafka
 RUN go get github.com/gin-gonic/gin
 RUN go get github.com/hamba/avro
 RUN go get github.com/google/uuid
+RUN go get github.com/golang-jwt/jwt/v5
 
 # Build the binaries
 RUN go build -tags musl -o order-service ./cmd/order-service/main.go

@@ -13,6 +13,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/hamba/avro"
 	"github.com/google/uuid"
+	
+	"github.com/Nish111/GlobalOrderPlatform/pkg/auth"
 )
 
 // Schema definition (embedded for simplicity, in prod load from file/registry)
@@ -69,8 +71,22 @@ func main() {
 
 	// 3. Start HTTP Server
 	r := gin.Default()
-	r.POST("/orders", createOrder)
+
+	// Public Routes
 	r.GET("/health", func(c *gin.Context) { c.JSON(200, gin.H{"status": "ok"}) })
+	
+	// Mock Auth Endpoint (For Dev/Test only)
+	r.GET("/auth/token", func(c *gin.Context) {
+		role := c.Query("role")
+		if role == "" { role = "customer" }
+		token, _ := auth.GenerateToken("user_"+uuid.New().String()[0:8], role)
+		c.JSON(200, gin.H{"token": token})
+	})
+
+	// Protected Routes
+	protected := r.Group("/")
+	protected.Use(auth.AuthMiddleware())
+	protected.POST("/orders", createOrder)
 
 	log.Println("Order Service listening on :8080")
 	r.Run(":8080")
